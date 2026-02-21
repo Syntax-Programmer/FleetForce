@@ -1,6 +1,10 @@
-import { getTotalTrips, calculateUtilization, getMaintenanceCostSummary } from "../utils/analytics";
+import {
+    getTotalTrips,
+    calculateUtilization,
+    getMaintenanceCostSummary,
+} from "@/lib/utils/analytics";
 
-export const generateFleetDashboard = (vehicles, trips, maintenanceLogs) => {
+export const generateFleetDashboard = (vehicles = [], trips = [], maintenanceLogs = []) => {
     const activeFleet = vehicles.filter((v) => v.status === "On Trip").length;
 
     const availableFleet = vehicles.filter((v) => v.status === "Available").length;
@@ -12,7 +16,7 @@ export const generateFleetDashboard = (vehicles, trips, maintenanceLogs) => {
         activeFleet,
         availableFleet,
         inMaintenance,
-        utilizationPercentage: calculateUtilization(vehicles),
-        totalMaintenanceCost: getMaintenanceCostSummary(maintenanceLogs),
+        utilizationPercentage: calculateUtilization(vehicles) || 0,
+        totalMaintenanceCost: getMaintenanceCostSummary(maintenanceLogs) || 0,
     };
 };
