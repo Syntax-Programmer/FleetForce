@@ -1,183 +1,265 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Eye, Plus } from "lucide-react"
-import { vehicles, drivers, recentTrips, type Trip } from "@/lib/mock-data"
-import { useState } from "react"
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Eye, Plus } from "lucide-react";
 
-function StatusBadge({ status }: { status: Trip["status"] }) {
-  const styles = {
-    Available: "bg-success/15 text-success border-success/20",
-    "On Trip": "bg-primary/15 text-primary border-primary/20",
-    Maintenance: "bg-warning/15 text-warning border-warning/20",
-    Completed: "bg-muted text-muted-foreground border-border",
-  }
-
-  return (
-    <Badge variant="outline" className={styles[status]}>
-      {status}
-    </Badge>
-  )
-}
+import { fetchAllData, createTrip, dispatchTrip, completeTrip } from "@/lib/services/persistence";
 
 export function TripsPage() {
-  const [showForm, setShowForm] = useState(false)
+    const [trips, setTrips] = useState<any[]>([]);
+    const [vehicles, setVehicles] = useState<any[]>([]);
+    const [drivers, setDrivers] = useState<any[]>([]);
+    const [showForm, setShowForm] = useState(false);
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-foreground">Trips</h2>
-          <p className="text-sm text-muted-foreground">
-            Create and manage fleet trips
-          </p>
-        </div>
-        <Button onClick={() => setShowForm(!showForm)}>
-          <Plus className="size-4" />
-          {showForm ? "Hide Form" : "Create Trip"}
-        </Button>
-      </div>
+    const [form, setForm] = useState({
+        vehicle: "",
+        driver: "",
+        distance: "",
+        cargoWeight: "",
+        fuelUsed: "",
+        expenses: "",
+    });
 
-      {/* Create Trip Form */}
-      {showForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold text-card-foreground">Create New Trip</CardTitle>
-            <CardDescription>Fill in the trip details below to dispatch a vehicle</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form
-              className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <div className="space-y-2">
-                <Label htmlFor="vehicle">Vehicle</Label>
-                <Select>
-                  <SelectTrigger id="vehicle" className="w-full">
-                    <SelectValue placeholder="Select vehicle" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {vehicles
-                      .filter((v) => v.status === "Available")
-                      .map((v) => (
-                        <SelectItem key={v.id} value={v.id}>
-                          {v.id} - {v.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
+    const load = async () => {
+        const data = await fetchAllData();
+        setTrips(data.trips);
+        setVehicles(data.vehicles);
+        setDrivers(data.drivers);
+    };
 
-              <div className="space-y-2">
-                <Label htmlFor="driver">Driver</Label>
-                <Select>
-                  <SelectTrigger id="driver" className="w-full">
-                    <SelectValue placeholder="Select driver" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {drivers
-                      .filter((d) => d.status === "Off Duty")
-                      .map((d) => (
-                        <SelectItem key={d.name} value={d.name}>
-                          {d.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
+    useEffect(() => {
+        load();
+    }, []);
 
-              <div className="space-y-2">
-                <Label htmlFor="distance">Distance (km)</Label>
-                <Input id="distance" type="number" placeholder="Enter distance" />
-              </div>
+    const handleCreateTrip = async (e: any) => {
+        e.preventDefault();
 
-              <div className="space-y-2">
-                <Label htmlFor="cargo">Cargo Weight (kg)</Label>
-                <Input id="cargo" type="number" placeholder="Enter cargo weight" />
-              </div>
+        const newTrip = await createTrip({
+            vehicle: form.vehicle,
+            driver: form.driver,
+            distance: Number(form.distance),
+            cargoWeight: Number(form.cargoWeight),
+            fuelUsed: Number(form.fuelUsed),
+            expenses: Number(form.expenses),
+            status: "Draft",
+        });
 
-              <div className="space-y-2">
-                <Label htmlFor="fuel">Fuel Used (L)</Label>
-                <Input id="fuel" type="number" placeholder="Enter fuel used" />
-              </div>
+        setShowForm(false);
+        setForm({
+            vehicle: "",
+            driver: "",
+            distance: "",
+            cargoWeight: "",
+            fuelUsed: "",
+            expenses: "",
+        });
 
-              <div className="space-y-2">
-                <Label htmlFor="expenses">Expenses ($)</Label>
-                <Input id="expenses" type="number" placeholder="Enter expenses" />
-              </div>
+        await load();
+    };
 
-              <div className="sm:col-span-2 lg:col-span-3">
-                <Button type="submit" className="w-full sm:w-auto">
-                  Submit Trip
+    const handleDispatch = async (trip: any) => {
+        const vehicle = vehicles.find((v) => v.id === trip.vehicle);
+        const driver = drivers.find((d) => d.id === trip.driver);
+
+        const result = await dispatchTrip(trip, vehicle, driver);
+
+        if (!result.valid) {
+            alert(result.message);
+        }
+
+        await load();
+    };
+
+    const handleComplete = async (trip: any) => {
+        const vehicle = vehicles.find((v) => v.id === trip.vehicle);
+        const driver = drivers.find((d) => d.id === trip.driver);
+
+        await completeTrip(trip, vehicle, driver);
+        await load();
+    };
+
+    const StatusBadge = ({ status }: { status: string }) => {
+        const styles: any = {
+            Draft: "bg-muted text-muted-foreground border-border",
+            Dispatched: "bg-primary/15 text-primary border-primary/20",
+            Completed: "bg-success/15 text-success border-success/20",
+        };
+
+        return (
+            <Badge variant="outline" className={styles[status]}>
+                {status}
+            </Badge>
+        );
+    };
+
+    return (
+        <div className="space-y-6">
+            {/* HEADER */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-xl font-bold text-foreground">Trips</h2>
+                    <p className="text-sm text-muted-foreground">Create and manage fleet trips</p>
+                </div>
+
+                <Button onClick={() => setShowForm(!showForm)}>
+                    <Plus className="size-4 mr-2" />
+                    {showForm ? "Hide Form" : "Create Trip"}
                 </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+            </div>
 
-      {/* Trips Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold text-card-foreground">All Trips</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Trip ID</TableHead>
-                <TableHead>Driver Name</TableHead>
-                <TableHead>Vehicle ID</TableHead>
-                <TableHead className="text-right">Distance</TableHead>
-                <TableHead className="text-right">Fuel Used</TableHead>
-                <TableHead className="text-right">Expenses</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentTrips.map((trip) => (
-                <TableRow key={trip.id}>
-                  <TableCell className="font-medium text-foreground">{trip.id}</TableCell>
-                  <TableCell>{trip.driver}</TableCell>
-                  <TableCell className="font-mono text-xs">{trip.vehicleId}</TableCell>
-                  <TableCell className="text-right">{trip.distance}</TableCell>
-                  <TableCell className="text-right">{trip.fuelUsed}</TableCell>
-                  <TableCell className="text-right">{trip.expenses}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={trip.status} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon-sm">
-                      <Eye className="size-4" />
-                      <span className="sr-only">View trip {trip.id}</span>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
-  )
+            {/* FORM */}
+            {showForm && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Create Trip</CardTitle>
+                        <CardDescription>Dispatch a vehicle with driver</CardDescription>
+                    </CardHeader>
+
+                    <CardContent>
+                        <form
+                            onSubmit={handleCreateTrip}
+                            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                        >
+                            {/* VEHICLE */}
+                            <div>
+                                <Label>Vehicle</Label>
+                                <Select onValueChange={(val) => setForm({ ...form, vehicle: val })}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select vehicle" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {vehicles
+                                            .filter((v) => v.status === "Available")
+                                            .map((v) => (
+                                                <SelectItem key={v.id} value={v.id}>
+                                                    {v.vehicleNumber}
+                                                </SelectItem>
+                                            ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* DRIVER */}
+                            <div>
+                                <Label>Driver</Label>
+                                <Select onValueChange={(val) => setForm({ ...form, driver: val })}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select driver" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {drivers
+                                            .filter((d) => d.status === "On Duty")
+                                            .map((d) => (
+                                                <SelectItem key={d.id} value={d.id}>
+                                                    {d.name}
+                                                </SelectItem>
+                                            ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <Input
+                                placeholder="Distance"
+                                type="number"
+                                onChange={(e) => setForm({ ...form, distance: e.target.value })}
+                            />
+
+                            <Input
+                                placeholder="Cargo Weight"
+                                type="number"
+                                onChange={(e) => setForm({ ...form, cargoWeight: e.target.value })}
+                            />
+
+                            <Input
+                                placeholder="Fuel Used"
+                                type="number"
+                                onChange={(e) => setForm({ ...form, fuelUsed: e.target.value })}
+                            />
+
+                            <Input
+                                placeholder="Expenses"
+                                type="number"
+                                onChange={(e) => setForm({ ...form, expenses: e.target.value })}
+                            />
+
+                            <Button type="submit" className="col-span-full">
+                                Create Trip
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* TABLE */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>All Trips</CardTitle>
+                </CardHeader>
+
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>ID</TableHead>
+                                <TableHead>Vehicle</TableHead>
+                                <TableHead>Driver</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+
+                        <TableBody>
+                            {trips.map((trip) => (
+                                <TableRow key={trip.id}>
+                                    <TableCell>{trip.id}</TableCell>
+                                    <TableCell>{trip.vehicle}</TableCell>
+                                    <TableCell>{trip.driver}</TableCell>
+                                    <TableCell>
+                                        <StatusBadge status={trip.status} />
+                                    </TableCell>
+                                    <TableCell className="text-right space-x-2">
+                                        {trip.status === "Draft" && (
+                                            <Button size="sm" onClick={() => handleDispatch(trip)}>
+                                                Dispatch
+                                            </Button>
+                                        )}
+
+                                        {trip.status === "Dispatched" && (
+                                            <Button
+                                                size="sm"
+                                                variant="secondary"
+                                                onClick={() => handleComplete(trip)}
+                                            >
+                                                Complete
+                                            </Button>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </div>
+    );
 }

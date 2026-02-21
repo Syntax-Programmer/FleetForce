@@ -1,52 +1,71 @@
-"use client"
+"use client";
 
-import { Card } from "@/components/ui/card"
-import {
-  Route,
-  Truck,
-  CircleCheck,
-  Fuel,
-  DollarSign,
-  Gauge,
-  Wrench,
-  TrendingUp,
-} from "lucide-react"
-import { kpiData } from "@/lib/mock-data"
+import { Card } from "@/components/ui/card";
+import { Route, Truck, CircleCheck, Gauge, Wrench } from "lucide-react";
 
 const iconMap = {
-  route: Route,
-  truck: Truck,
-  "circle-check": CircleCheck,
-  fuel: Fuel,
-  dollar: DollarSign,
-  gauge: Gauge,
-  wrench: Wrench,
-  trending: TrendingUp,
-} as const
+    totalTrips: Route,
+    activeFleet: Truck,
+    availableFleet: CircleCheck,
+    utilization: Gauge,
+    maintenance: Wrench,
+};
 
-export function KpiCards() {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {kpiData.map((kpi) => {
-        const Icon = iconMap[kpi.icon]
-        return (
-          <Card
-            key={kpi.label}
-            className="group relative overflow-hidden py-4 transition-shadow hover:shadow-md"
-          >
-            <div className="flex items-start gap-4 px-5">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/15">
-                <Icon className="size-5" />
-              </div>
-              <div className="flex-1 space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">{kpi.label}</p>
-                <p className="text-xl font-bold text-card-foreground tracking-tight">{kpi.value}</p>
-                <p className="text-xs font-medium text-success">{kpi.change}</p>
-              </div>
-            </div>
-          </Card>
-        )
-      })}
-    </div>
-  )
+export function KpiCards({ dashboard }) {
+    const data = [
+        {
+            key: "totalTrips",
+            label: "Total Trips",
+            value: dashboard.totalTrips,
+        },
+        {
+            key: "activeFleet",
+            label: "Active Vehicles",
+            value: dashboard.activeFleet,
+        },
+        {
+            key: "availableFleet",
+            label: "Available Vehicles",
+            value: dashboard.availableFleet,
+        },
+        {
+            key: "utilization",
+            label: "Vehicle Utilization",
+            value: dashboard.utilizationPercentage + "%",
+        },
+        {
+            key: "maintenance",
+            label: "Maintenance Cost",
+            value: "₹" + dashboard.totalMaintenanceCost,
+        },
+    ];
+
+    return (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {data.map((kpi) => {
+                const Icon = iconMap[kpi.key];
+
+                return (
+                    <Card
+                        key={kpi.label}
+                        className="group relative overflow-hidden py-4 transition-shadow hover:shadow-md"
+                    >
+                        <div className="flex items-start gap-4 px-5">
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                <Icon className="size-5" />
+                            </div>
+                            <div className="flex-1 space-y-1">
+                                <p className="text-xs font-medium text-muted-foreground">
+                                    {kpi.label}
+                                </p>
+                                <p className="text-xl font-bold text-card-foreground tracking-tight">
+                                    {kpi.value}
+                                </p>
+                            </div>
+                        </div>
+                    </Card>
+                );
+            })}
+        </div>
+    );
 }

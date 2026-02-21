@@ -38,26 +38,23 @@ export const handleTripCompletion = (trip, vehicle) => {
    TRIP DISPATCH
 ========================= */
 export const handleTripDispatch = (trip, vehicle, driver) => {
-    if (!trip || !vehicle || !driver) {
-        return { valid: false, message: "Missing trip, vehicle or driver" };
+    if (vehicle.status !== "Available") {
+        return { valid: false, message: "Vehicle not available" };
     }
 
-    const validation = validateTripDispatch({
-        vehicle,
-        driver,
-        cargoWeight: trip.cargoWeight || 0,
-    });
+    if (driver.status !== "On Duty") {
+        return { valid: false, message: "Driver not on duty" };
+    }
 
-    if (!validation.valid) {
-        return validation;
+    if (trip.cargoWeight > vehicle.maxCapacity) {
+        return { valid: false, message: "Over capacity" };
     }
 
     return {
         valid: true,
-        updatedVehicle: dispatchVehicle(vehicle),
-        updatedTrip: {
-            ...trip,
-            status: "On Trip", // IMPORTANT: keep consistent with dashboard
+        updatedVehicle: {
+            ...vehicle,
+            status: "On Trip",
         },
     };
 };
