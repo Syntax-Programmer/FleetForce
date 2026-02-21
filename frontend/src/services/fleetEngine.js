@@ -43,13 +43,13 @@ export const handleTripCompletion = (trip, vehicle) => {
     trip.distance
   );
 
-  return {
-    updatedVehicle,
-    updatedTrip: {
-      ...trip,
-      status: "Completed",
-    },
-    fuelEfficiency,
-    costPerKm,
-  };
- }
+ return {
+  updatedVehicle,
+  updatedTrip: {
+    ...trip,
+    status: "Completed",
+  },
+  fuelEfficiency,
+  costPerKm,
+};
+};
