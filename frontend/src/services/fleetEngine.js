@@ -1,55 +1,44 @@
 import {
-  validateTripDispatch,
-  dispatchVehicle,
-  completeTripVehicleUpdate,
+    validateTripDispatch,
+    dispatchVehicle,
+    completeTripVehicleUpdate,
 } from "../utils/businessRules";
 
-import {
-  calculateFuelEfficiency,
-  calculateCostPerKm,
-} from "../utils/analytics";
-
-export const handleTripDispatch = (trip, vehicle, driver) => {
-  const validation = validateTripDispatch({
-    vehicle,
-    driver,
-    cargoWeight: trip.cargoWeight,
-  });
-
-  if (!validation.valid) return validation;
-
-    return {
-         valid: true,
-         updatedVehicle: dispatchVehicle(vehicle),
-        updatedTrip: {
-         ...trip,
-         status: "Dispatched",
-        },
-};
+import { calculateFuelEfficiency, calculateCostPerKm } from "../utils/analytics";
 
 export const handleTripCompletion = (trip, vehicle) => {
-  const updatedVehicle = completeTripVehicleUpdate(
-    vehicle,
-    trip.distance
-  );
+    const updatedVehicle = completeTripVehicleUpdate(vehicle, trip.distance);
 
-  const fuelEfficiency = calculateFuelEfficiency(
-    trip.distance,
-    trip.fuelUsed
-  );
+    const fuelEfficiency = calculateFuelEfficiency(trip.distance, trip.fuelUsed);
 
-  const costPerKm = calculateCostPerKm(
-    trip.expenses,
-    trip.distance
-  );
+    const costPerKm = calculateCostPerKm(trip.expenses, trip.distance);
 
- return {
-  updatedVehicle,
-  updatedTrip: {
-    ...trip,
-    status: "Completed",
-  },
-  fuelEfficiency,
-  costPerKm,
+    return {
+        updatedVehicle,
+        updatedTrip: {
+            ...trip,
+            status: "Completed",
+        },
+        fuelEfficiency,
+        costPerKm,
+    };
 };
+
+export const handleTripDispatch = (trip, vehicle, driver) => {
+    const validation = validateTripDispatch({
+        vehicle,
+        driver,
+        cargoWeight: trip.cargoWeight,
+    });
+
+    if (!validation.valid) return validation;
+
+    return {
+        valid: true,
+        updatedVehicle: dispatchVehicle(vehicle),
+        updatedTrip: {
+            ...trip,
+            status: "Dispatched",
+        },
+    };
 };
