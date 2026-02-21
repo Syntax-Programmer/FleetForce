@@ -9,13 +9,13 @@ OS="$(uname)"
 
 if [ "$OS" = "Linux" ]; then
     echo "Detected Linux"
-    chmod +x pocketbase_linux/pocketbase
-    ./pocketbase_0.36.4_linux_amd64/pocketbase serve &
+    chmod +x pocketbase-linux
+    ./pocketbase-linux serve &
 
 elif [ "$OS" = "Darwin" ]; then
     echo "Detected macOS"
-    chmod +x pocketbase_mac/pocketbase
-    ./pocketbase_0.36.4_darwin_amd64/pocketbase serve &
+    chmod +x pocketbase-mac
+    ./pocketbase-mac serve &
 
 else
     echo "Unsupported OS: $OS"

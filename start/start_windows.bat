@@ -5,7 +5,7 @@ echo Starting FleetForce...
 cd /d %~dp0
 cd ../backend
 
-start pocketbase_0.36.4_windows_amd64\pocketbase.exe serve
+start pocketbase-windows.exe serve
 
 cd ../frontend
 
