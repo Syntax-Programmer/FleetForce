@@ -1,14 +1,17 @@
 @echo off
-
 echo Starting FleetForce...
 
 cd /d %~dp0
-cd ../backend
+cd ..\backend
 
-start pocketbase-windows.exe serve
+echo Detected Windows
 
-cd ../frontend
+start "" pocketbase-windows.exe serve
 
-echo Starting frontend server at http://127.0.0.1:8000
+cd ..\frontend
 
-python -m http.server 8000
+echo Installing frontend dependencies...
+call npm install
+
+echo Starting frontend (Vite dev server)...
+call npm run dev

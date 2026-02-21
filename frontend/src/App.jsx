@@ -1,15 +1,7 @@
-import { useEffect } from "react";
-import pb from "./lib/pocketbase";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
-    useEffect(() => {
-        pb.collection("vehicles")
-            .getFullList()
-            .then((data) => console.log("Vehicles:", data))
-            .catch((err) => console.error(err));
-    }, []);
-
-    return <h1>FleetFlow</h1>;
+  return <Dashboard />;
 }
 
 export default App;

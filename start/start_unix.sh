@@ -24,6 +24,8 @@ fi
 
 cd ../frontend
 
-echo "Starting frontend server at http://127.0.0.1:8000"
+echo "Installing frontend dependencies..."
+npm install
 
-python3 -m http.server 8000
+echo "Starting frontend (Vite dev server)..."
+npm run dev
